@@ -10,6 +10,7 @@ pipeline {
         DOCKERHUB_USERNAME = "antony1552006"
         FRONTEND_IMAGE = "${DOCKERHUB_USERNAME}/resume-frontend"
         BACKEND_IMAGE = "${DOCKERHUB_USERNAME}/resume-backend"
+        MONGO_IMAGE = "${DOCKERHUB_USERNAME}/resume-mongodb"
         VERSION = "${version}"
         GIT_REPO_URL = "https://github.com/ankerman2k6/Resume_Analyser.git"
         GIT_BRANCH = "frontend/candiate"
@@ -77,6 +78,16 @@ pipeline {
                                 docker push ${BACKEND_IMAGE}:${VERSION_COMMIT}
                             """
                         }
+
+                        // 3. Build & Push MongoDB Image (kèm sẵn dữ liệu cv_screening)
+                        echo "Đang build & push MongoDB Image..."
+                        dir('mongo-init') {
+                            sh """
+                                docker build -t ${MONGO_IMAGE}:${VERSION} -t ${MONGO_IMAGE}:${VERSION_COMMIT} .
+                                docker push ${MONGO_IMAGE}:${VERSION}
+                                docker push ${MONGO_IMAGE}:${VERSION_COMMIT}
+                            """
+                        }
                     }
                 }
             }
@@ -89,11 +100,12 @@ pipeline {
                     # Ghi tag phiên bản mới nhất vào file .env cho docker-compose
                     echo "FRONTEND_IMAGE=${FRONTEND_IMAGE}" > .env
                     echo "BACKEND_IMAGE=${BACKEND_IMAGE}" >> .env
+                    echo "MONGO_IMAGE=${MONGO_IMAGE}" >> .env
                     echo "VERSION=${VERSION_COMMIT}" >> .env
 
                     echo "Dừng và dọn dẹp container cũ (nếu có)..."
                     docker compose down --remove-orphans || true
-                    docker rm -f resume-backend resume-frontend 2>/dev/null || true
+                    docker rm -f resume-backend resume-frontend resume-mongodb 2>/dev/null || true
 
                     echo "Khởi chạy container mới bằng images vừa build..."
                     docker compose up -d --force-recreate

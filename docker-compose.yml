@@ -1,21 +1,19 @@
 # ==========================================================
 # Docker Compose - Resume Analyser (Full Stack + Database)
-# Tích hợp trọn gói MongoDB + Backend + Frontend
+# Tích hợp trọn gói MongoDB (có sẵn dữ liệu) + Backend + Frontend
 # ==========================================================
 
 services:
 
-  # --- Database MongoDB ---
+  # --- Database MongoDB (Đã đóng gói sẵn 100% dữ liệu cv_screening) ---
   mongodb:
-    image: mongo:7
+    image: ${MONGO_IMAGE:-antony1552006/resume-mongodb}:${VERSION:-latest}
     container_name: resume-mongodb
     ports:
       - "27017:27017"
     volumes:
-      # Lưu trữ dữ liệu vĩnh viễn
+      # Lưu trữ các dữ liệu mới tạo thêm sau này
       - mongo-data:/data/db
-      # Tự động nạp cấu trúc & dữ liệu cv_screening khi khởi chạy lần đầu
-      - ./mongo-init:/docker-entrypoint-initdb.d:ro
     networks:
       - resume-network
     restart: always
@@ -27,7 +25,7 @@ services:
     ports:
       - "8081:8080"
     environment:
-      # Kết nối trực tiếp tới container mongodb bên trên qua tên service
+      # Kết nối trực tiếp tới container mongodb bên trên
       - SPRING_MONGODB_URI=mongodb://mongodb:27017/cv_screening
     depends_on:
       - mongodb
@@ -47,7 +45,7 @@ services:
       - resume-network
     restart: always
 
-# Volume lưu trữ dữ liệu database lâu dài
+# Volume lưu trữ dữ liệu database
 volumes:
   mongo-data:
 
@@ -55,4 +53,3 @@ volumes:
 networks:
   resume-network:
     name: resume-network
-    external: true
