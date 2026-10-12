@@ -91,11 +91,12 @@ pipeline {
                     echo "BACKEND_IMAGE=${BACKEND_IMAGE}" >> .env
                     echo "VERSION=${VERSION_COMMIT}" >> .env
 
-                    echo "Dừng container cũ (nếu có)..."
-                    docker compose down
+                    echo "Dừng và dọn dẹp container cũ (nếu có)..."
+                    docker compose down --remove-orphans || true
+                    docker rm -f resume-backend resume-frontend 2>/dev/null || true
 
                     echo "Khởi chạy container mới bằng images vừa build..."
-                    docker compose up -d
+                    docker compose up -d --force-recreate
                 """
             }
         }
