@@ -35,8 +35,8 @@ pipeline {
                     steps {
                         echo "=== KIỂM THỬ FRONTEND ==="
                         dir('frontend') {
-                            // Chạy test trong container Node.js tạm thời, tránh lỗi thiếu npm trên Jenkins host
-                            sh 'docker run --rm -v $(pwd):/app -w /app node:20-alpine sh -c "npm install && npm test"'
+                            sh 'npm install'
+                            sh 'npm test'
                         }
                     }
                 }
