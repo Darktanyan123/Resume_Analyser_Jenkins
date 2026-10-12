@@ -1,7 +1,7 @@
 # =============================================
 # STAGE 1: Build - Biên dịch mã nguồn Java
 # =============================================
-# Dùng Maven + JDK 21 để build project
+# Dùng Maven + JDK 21 để build project 
 FROM maven:3.9-eclipse-temurin-21 AS build
 
 # Đặt thư mục làm việc bên trong container
@@ -33,5 +33,6 @@ COPY --from=build /app/target/*.jar app.jar
 # Mở port 8080 (port mặc định của Spring Boot)
 EXPOSE 8080
 
-# Lệnh khởi chạy ứng dụng
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Lệnh khởi chạy ứng dụng, câu lệnh khi mà load xong môi trường thì sẽ chạy câu lệnh này
+ENTRYPOINT ["java", "-jar", "app.jar"] 
+# Viết theo java version, với version tương ứng
