@@ -1,30 +1,39 @@
-#thiếu network, nếu muốn kết nối các container với nhau thì cần khai báo network.
-#code commit -> lấy code -> đóng gói docker-compose.yml
-services:
-#Thiếu network, nếu muốn kết nối các container với nhau thì cần khai báo network, 
+# ==========================================================
+# Docker Compose - Resume Analyser (Production/Deployment)
+# Không build context trực tiếp - Chỉ chạy Images từ Registry
+# ==========================================================
 
-  # --- Backend (Spring Boot) ---
+services:
+
+  # --- Backend (Spring Boot API) ---
   backend:
-  # nặng, chỉ run k build
-    build:
-    #context nặng rất lâu
-      context: ./backend
+    # Lấy image và tag từ file .env (sinh tự động từ Jenkins)
+    image: ${BACKEND_IMAGE:-antony1552006/resume-backend}:${VERSION:-latest}
     container_name: resume-backend
     ports:
       - "8080:8080"
     environment:
-      # Dùng host.docker.internal để truy cập container local-mongo
-      # đang chạy trên máy host (port 27017)
-      # internal sai,  nếu mongodb:27017 phải là network, còn host.docker.internal là truy cập từ máy host
-      - SPRING_MONGODB_URI=mongodb://host.docker.internal:27017/cv_screening 
-
+      # Kết nối MongoDB:
+      # Nếu container mongo nằm trong cùng resume-network: dùng mongodb://local-mongo:27017/cv_screening
+      - SPRING_MONGODB_URI=mongodb://local-mongo:27017/cv_screening
+    networks:
+      - resume-network
+    restart: always
 
   # --- Frontend (React + Nginx) ---
   frontend:
-    build:
-      context: ./frontend
+    # Lấy image và tag từ file .env (sinh tự động từ Jenkins)
+    image: ${FRONTEND_IMAGE:-antony1552006/resume-frontend}:${VERSION:-latest}
     container_name: resume-frontend
     ports:
       - "3000:80"
     depends_on:
       - backend
+    networks:
+      - resume-network
+    restart: always
+
+# Network dùng chung giữa các container và database local-mongo
+networks:
+  resume-network:
+    name: resume-network
