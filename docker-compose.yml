@@ -53,3 +53,4 @@ volumes:
 networks:
   resume-network:
     name: resume-network
+    external: true
