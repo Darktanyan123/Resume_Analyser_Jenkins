@@ -36,4 +36,4 @@ services:
 # Network dùng chung giữa các container và database local-mongo
 networks:
   resume-network:
-    name: resume-network
+    external: true
