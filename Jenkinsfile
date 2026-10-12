@@ -2,6 +2,9 @@ def version = "v0.${BUILD_NUMBER}"
 
 pipeline {
     agent any
+    tools {
+        nodejs 'node20'
+    }
 
     environment {
         DOCKERHUB_USERNAME = "antony1552006"
@@ -32,8 +35,8 @@ pipeline {
                     steps {
                         echo "=== KIỂM THỬ FRONTEND ==="
                         dir('frontend') {
-                            sh 'npm install'
-                            sh 'npm test'
+                            // Chạy test trong container Node.js tạm thời, tránh lỗi thiếu npm trên Jenkins host
+                            sh 'docker run --rm -v $(pwd):/app -w /app node:20-alpine sh -c "npm install && npm test"'
                         }
                     }
                 }
