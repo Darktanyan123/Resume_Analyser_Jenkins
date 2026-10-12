@@ -11,7 +11,7 @@ services:
     image: ${BACKEND_IMAGE:-antony1552006/resume-backend}:${VERSION:-latest}
     container_name: resume-backend
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
       # Kết nối MongoDB:
       # Nếu container mongo nằm trong cùng resume-network: dùng mongodb://local-mongo:27017/cv_screening
