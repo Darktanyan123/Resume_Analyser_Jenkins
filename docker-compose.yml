@@ -1,28 +1,42 @@
 # ==========================================================
-# Docker Compose - Resume Analyser (Production/Deployment)
-# Không build context trực tiếp - Chỉ chạy Images từ Registry
+# Docker Compose - Resume Analyser (Full Stack + Database)
+# Tích hợp trọn gói MongoDB + Backend + Frontend
 # ==========================================================
 
 services:
 
+  # --- Database MongoDB ---
+  mongodb:
+    image: mongo:7
+    container_name: resume-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      # Lưu trữ dữ liệu vĩnh viễn
+      - mongo-data:/data/db
+      # Tự động nạp cấu trúc & dữ liệu cv_screening khi khởi chạy lần đầu
+      - ./mongo-init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - resume-network
+    restart: always
+
   # --- Backend (Spring Boot API) ---
   backend:
-    # Lấy image và tag từ file .env (sinh tự động từ Jenkins)
     image: ${BACKEND_IMAGE:-antony1552006/resume-backend}:${VERSION:-latest}
     container_name: resume-backend
     ports:
       - "8081:8080"
     environment:
-      # Kết nối MongoDB:
-      # Nếu container mongo nằm trong cùng resume-network: dùng mongodb://local-mongo:27017/cv_screening
-      - SPRING_MONGODB_URI=mongodb://local-mongo:27017/cv_screening
+      # Kết nối trực tiếp tới container mongodb bên trên qua tên service
+      - SPRING_MONGODB_URI=mongodb://mongodb:27017/cv_screening
+    depends_on:
+      - mongodb
     networks:
       - resume-network
     restart: always
 
   # --- Frontend (React + Nginx) ---
   frontend:
-    # Lấy image và tag từ file .env (sinh tự động từ Jenkins)
     image: ${FRONTEND_IMAGE:-antony1552006/resume-frontend}:${VERSION:-latest}
     container_name: resume-frontend
     ports:
@@ -33,7 +47,11 @@ services:
       - resume-network
     restart: always
 
-# Network dùng chung giữa các container và database local-mongo
+# Volume lưu trữ dữ liệu database lâu dài
+volumes:
+  mongo-data:
+
+# Network kết nối 3 container
 networks:
   resume-network:
-    external: true
+    name: resume-network
