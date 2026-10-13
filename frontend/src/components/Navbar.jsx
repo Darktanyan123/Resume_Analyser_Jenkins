@@ -42,20 +42,26 @@ const Navbar = () => {
   };
 
   const isCandidateActive = location.pathname.startsWith('/candidate');
-  const isHrActive = location.pathname.startsWith('/hr');
+  const isCvActive = location.pathname.startsWith('/cv');
+  const isHrRoute = location.pathname.startsWith('/hr');
+
+  // Chỉ hiển thị Navbar ở phân hệ ứng viên hoặc khi chưa đăng nhập; ẩn ở phân hệ nhà tuyển dụng
+  if (isHrRoute) {
+    return null;
+  }
 
   return (
     <header className="navbar" role="banner">
       <div className="navbar-container">
         {/* Left: Brand Logo */}
         <Link to="/" className="navbar-brand" aria-label="CMCV Trang chủ">
-          <span className="navbar-brand-badge" aria-hidden="true" >
-            <img src={document.documentElement.getAttribute('data-theme') === 'dark' ? logoDark : logoLight} alt="CMCV Logo" className="logo" />
+          <span className="navbar-brand-badge" aria-hidden="true">
+            <img
+              src={isDark ? logoDark : logoLight}
+              alt="CMCV Logo"
+              className="logo"
+            />
           </span>
-          {/* <div className="navbar-brand-info">
-            <span className="navbar-brand-name">CMCV</span>
-            <span className="navbar-brand-tagline">Smart Recruitment</span>
-          </div> */}
         </Link>
 
         {/* Right: Actions */}
@@ -87,8 +93,9 @@ const Navbar = () => {
 
             <button
               type="button"
-              className={`btn-nav btn-nav--primary ${isHrActive ? 'is-active' : ''}`}
-              onClick={() => navigate('/hr')}
+              className={`btn-nav btn-nav--primary ${isCvActive ? 'is-active' : ''}`}
+              onClick={() => navigate('/cv')}
+              aria-current={isCvActive ? 'page' : undefined}
             >
               <svg
                 className="btn-nav-icon"

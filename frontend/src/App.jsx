@@ -6,18 +6,22 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import HRPage from './pages/hr/index';
 import CandidatePage from './pages/candiate/index';
+import CVUploadPage from './pages/cv/index';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Layout chung có Navbar */}
+        {/* Layout chung có Navbar: chỉ dành cho phân hệ ứng viên hoặc khi chưa đăng nhập */}
         <Route path="/" element={<MainLayout />}>
           <Route index element={<HomePage />} />
-          {/* 2 trang theo role */}
-          <Route path="hr" element={<HRPage />} />
           <Route path="candidate" element={<CandidatePage />} />
+          <Route path="cv" element={<CVUploadPage />} />
+          <Route path="candidate/cv" element={<CVUploadPage />} />
         </Route>
+
+        {/* Phân hệ Nhà tuyển dụng: không có Navbar ở trên */}
+        <Route path="/hr" element={<HRPage />} />
 
         {/* Các trang xác thực độc lập */}
         <Route path="/login" element={<LoginPage />} />
