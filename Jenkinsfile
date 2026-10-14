@@ -2,7 +2,10 @@ def version = "v0.${BUILD_NUMBER}"
 
 pipeline {
     agent any
+
     tools {
+        jdk 'jdk21'
+        maven 'maven3'
         nodejs 'node20'
     }
 
@@ -25,7 +28,7 @@ pipeline {
                     // Lấy mã hash commit rút gọn (vd: a1b2c3d)
                     env.GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     env.VERSION_COMMIT = "${env.VERSION}-${env.GIT_COMMIT_SHORT}"
-                    echo " Phiên bản build: ${env.VERSION_COMMIT}"
+                    echo "📦 Phiên bản build: ${env.VERSION_COMMIT}"
                 }
             }
         }
@@ -45,7 +48,7 @@ pipeline {
                     steps {
                         echo "=== KIỂM THỬ BACKEND ==="
                         dir('backend') {
-                            // Chạy unit test bằng Maven wrapper
+                            // Chạy compile và test bằng Maven để sinh class file cho SonarQube
                             sh 'chmod +x ./mvnw'
                             sh './mvnw test'
                         }
@@ -54,10 +57,34 @@ pipeline {
             }
         }
 
-        stage("3. Build & Push Docker Images") {
+        stage("3. SonarQube Analysis") {
             steps {
-                echo "=== BƯỚC 3: ĐÓNG GÓI VÀ ĐẨY IMAGES LÊN DOCKER HUB ==="
+                echo "=== BƯỚC 3: QUÉT MÃ NGUỒN BẰNG SONARQUBE ==="
                 script {
+                    def scannerHome = tool 'sonar-scanner'
+                    withSonarQubeEnv('SonarQube') {
+                        // Quét mã nguồn dựa trên cấu hình trong file sonar-project.properties
+                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectVersion=${env.VERSION_COMMIT}"
+                    }
+                }
+            }
+        }
+
+        stage("4. Quality Gate") {
+            steps {
+                echo "=== BƯỚC 4: KIỂM TRA CHẤT LƯỢNG MÃ NGUỒN (QUALITY GATE) ==="
+                timeout(time: 2, unit: 'MINUTES') {
+                    // Chờ Webhook từ SonarQube gửi tín hiệu về: Nếu code đạt chuẩn mới cho đi tiếp
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage("5. Build & Push Docker Images") {
+            steps {
+                echo "=== BƯỚC 5: ĐÓNG GÓI VÀ ĐẨY IMAGES LÊN DOCKER HUB ==="
+                script {
+                    // Sử dụng đúng credential dockerhub-credentials của bạn
                     withDockerRegistry(credentialsId: 'dockerhub-credentials', toolName: 'docker') {
                         // 1. Build & Push Frontend Image
                         echo "Đang build & push Frontend Image..."
@@ -93,9 +120,9 @@ pipeline {
             }
         }
 
-        stage("4. Deploy Containers") {
+        stage("6. Deploy Containers") {
             steps {
-                echo "=== BƯỚC 4: TRIỂN KHAI CONTAINERS VỚI PHIÊN BẢN MỚI ==="
+                echo "=== BƯỚC 6: TRIỂN KHAI CONTAINERS VỚI PHIÊN BẢN MỚI ==="
                 sh """
                     # Ghi tag phiên bản mới nhất vào file .env cho docker-compose
                     echo "FRONTEND_IMAGE=${FRONTEND_IMAGE}" > .env
@@ -116,7 +143,7 @@ pipeline {
 
     post {
         success {
-            echo "🎉 Pipeline hoàn tất thành công! Đã deploy Backend & Frontend với tag ${env.VERSION_COMMIT}"
+            echo "🎉 Pipeline hoàn tất thành công! Đã qua kiểm tra SonarQube Quality Gate và Deploy với tag ${env.VERSION_COMMIT}"
         }
         failure {
             echo "❌ Pipeline thất bại! Vui lòng kiểm tra lại log chi tiết."
