@@ -171,15 +171,15 @@ const CVUploadPage = () => {
         prev.map((it) =>
           it.id === itemId
             ? {
-                ...it,
-                id: created.id || itemId,
-                originalFileName: created.originalFileName || file.name,
-                fileSize: created.fileSize || file.size,
-                status: 'uploaded',
-                progress: 100,
-                uploadedAtLabel: formatUploadedDate(created.uploadedAt),
-                errorMessage: null
-              }
+              ...it,
+              id: created.id || itemId,
+              originalFileName: created.originalFileName || file.name,
+              fileSize: created.fileSize || file.size,
+              status: 'uploaded',
+              progress: 100,
+              uploadedAtLabel: formatUploadedDate(created.uploadedAt),
+              errorMessage: null
+            }
             : it
         )
       );
@@ -191,13 +191,13 @@ const CVUploadPage = () => {
         prev.map((it) =>
           it.id === itemId
             ? {
-                ...it,
-                status: 'error',
-                progress: 0,
-                isAuthError: err.status === 401,
-                errorMessage:
-                  err.message || 'Không tải được tệp lên máy chủ'
-              }
+              ...it,
+              status: 'error',
+              progress: 0,
+              isAuthError: err.status === 401,
+              errorMessage:
+                err.message || 'Không tải được tệp lên máy chủ'
+            }
             : it
         )
       );
@@ -210,7 +210,7 @@ const CVUploadPage = () => {
     if (files.length === 0) return;
 
     for (const file of files) {
-      const tempId = `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      const tempId = `local-${Date.now()}-${crypto.randomUUID()}`;
       const validation = await validateResumeFile(file);
 
       if (!validation.valid) {
