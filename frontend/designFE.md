@@ -3,7 +3,7 @@
 ## 1. Tổng quan Sản phẩm & Hướng thẩm mỹ
 - **Loại sản phẩm:** Ứng dụng di động để Phân tích Cấu trúc Sơ yếu lý lịch, Sàng lọc và Kết nối Công việc bằng AI (Hệ thống ATS).
 - **Thẩm mỹ cốt lõi:** Hiện đại, gọn gàng, đáng tin cậy và mang phong cách công nghệ AI tương lai.
-- **Hình tượng Thiết kế:** Bề mặt màu xanh navy (slate navy) đậm, các thẻ màu trắng/kính sắc nét, điểm nhấn màu xanh ngọc bích (ice-blue), và các góc bo tròn mềm mại.
+- **Hình tượng Thiết kế:** Màu xanh navy (slate navy) đậm, các thẻ màu trắng/kính sắc nét, điểm nhấn màu xanh ngọc bích (ice-blue), và các góc bo tròn mềm mại.
 - **Đặc điểm Giao diện Người dùng (UI) chính:**
   * Thanh điều hướng dưới cùng dạng viên thuốc nổi với các cạnh bo tròn (phong cách Dynamic Island).
   * Các nút hành động chứa biểu tượng hình tròn.

@@ -6,17 +6,17 @@ pipeline {
     tools {
         jdk 'jdk21'
         maven 'maven3'
-        nodejs 'node20'
+        nodejs 'NodeJS-20'
     }
 
     environment {
-        DOCKERHUB_USERNAME = "antony1552006"
+        DOCKERHUB_USERNAME = "hoang2207"
         FRONTEND_IMAGE = "${DOCKERHUB_USERNAME}/resume-frontend"
         BACKEND_IMAGE = "${DOCKERHUB_USERNAME}/resume-backend"
         MONGO_IMAGE = "${DOCKERHUB_USERNAME}/resume-mongodb"
         VERSION = "${version}"
-        GIT_REPO_URL = "https://github.com/ankerman2k6/Resume_Analyser.git"
-        GIT_BRANCH = "frontend/candiate"
+        GIT_REPO_URL = "https://github.com/Darktanyan123/Resume_Analyser_Jenkins.git"
+        GIT_BRANCH = "jenkins_new"
     }
 
     stages {
