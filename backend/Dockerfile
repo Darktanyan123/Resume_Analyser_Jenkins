@@ -25,13 +25,16 @@ RUN mvn package -DskipTests -B
 # Dùng JRE 21 nhẹ hơn (không cần compiler nữa)
 FROM eclipse-temurin:21-jre
 
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Copy file .jar từ stage build sang stage run
 COPY --from=build /app/target/*.jar app.jar
 
-# Mở port 8080 (port mặc định của Spring Boot)
-EXPOSE 8080
+# Mở cổng API của backend
+EXPOSE 8081
 
 # Lệnh khởi chạy ứng dụng, câu lệnh khi mà load xong môi trường thì sẽ chạy câu lệnh này
 ENTRYPOINT ["java", "-jar", "app.jar"] 

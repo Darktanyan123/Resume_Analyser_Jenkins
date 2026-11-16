@@ -1,20 +1,29 @@
 package com.resumeanalyser.backend.model;
 
-import java.time.LocalDateTime;
+import tools.jackson.databind.annotation.JsonSerialize;
+import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
+import com.resumeanalyser.backend.config.ObjectIdStringSerializer;
+
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "jobs")
 public class Job {
 
     @Id
-    private String id;
+    @JsonSerialize(using = ObjectIdStringSerializer.class)
+    private ObjectId id;
 
-    private String companyId;
-    private String recruiterId;
+    @JsonSerialize(using = ObjectIdStringSerializer.class)
+    private ObjectId companyId;
+
+    @JsonSerialize(using = ObjectIdStringSerializer.class)
+    private ObjectId recruiterId;
 
     private String title;
     private String description;
@@ -24,18 +33,146 @@ public class Job {
     private Location location;
     private Salary salary;
     private Experience experience;
-    private Requirements requirements;
+
+    // Keep all requirement fields, including education, GPA and languages.
+    private Map<String, Object> requirements;
+
     private List<String> benefits = new ArrayList<>();
 
-    private LocalDateTime deadline;
-    private String status; // "draft", "published", "closed", "expired"
+    private Instant deadline;
+    private String status;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
 
-    public Job() {
+    public ObjectId getId() {
+        return id;
     }
-    // embed class lồng nhau (Location, Requirements) để map đúng các object con trong MongoDB
+
+    public void setId(ObjectId id) {
+        this.id = id;
+    }
+
+    public ObjectId getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(ObjectId companyId) {
+        this.companyId = companyId;
+    }
+
+    public ObjectId getRecruiterId() {
+        return recruiterId;
+    }
+
+    public void setRecruiterId(ObjectId recruiterId) {
+        this.recruiterId = recruiterId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getEmploymentType() {
+        return employmentType;
+    }
+
+    public void setEmploymentType(String employmentType) {
+        this.employmentType = employmentType;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
+    }
+
+    public Salary getSalary() {
+        return salary;
+    }
+
+    public void setSalary(Salary salary) {
+        this.salary = salary;
+    }
+
+    public Experience getExperience() {
+        return experience;
+    }
+
+    public void setExperience(Experience experience) {
+        this.experience = experience;
+    }
+
+    public Map<String, Object> getRequirements() {
+        return requirements;
+    }
+
+    public void setRequirements(Map<String, Object> requirements) {
+        this.requirements = requirements;
+    }
+
+    public List<String> getBenefits() {
+        return benefits;
+    }
+
+    public void setBenefits(List<String> benefits) {
+        this.benefits = benefits;
+    }
+
+    public Instant getDeadline() {
+        return deadline;
+    }
+
+    public void setDeadline(Instant deadline) {
+        this.deadline = deadline;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
     public static class Location {
         private String address;
         private String city;
@@ -61,6 +198,7 @@ public class Job {
         public void setCountry(String country) { this.country = country; }
 
         public Boolean getRemote() { return remote; }
+        public boolean isRemote() { return Boolean.TRUE.equals(remote); }
         public void setRemote(Boolean remote) { this.remote = remote; }
     }
 
@@ -89,6 +227,7 @@ public class Job {
         public void setCurrency(String currency) { this.currency = currency; }
 
         public Boolean getNegotiable() { return negotiable; }
+        public boolean isNegotiable() { return Boolean.TRUE.equals(negotiable); }
         public void setNegotiable(Boolean negotiable) { this.negotiable = negotiable; }
     }
 
@@ -118,12 +257,20 @@ public class Job {
     public static class Requirements {
         private List<String> requiredSkills = new ArrayList<>();
         private List<String> preferredSkills = new ArrayList<>();
+        private Education education;
+        private MinimumGpa minimumGpa;
+        private List<LanguageRequirement> languages = new ArrayList<>();
 
         public Requirements() {}
 
-        public Requirements(List<String> requiredSkills, List<String> preferredSkills) {
+        public Requirements(List<String> requiredSkills, List<String> preferredSkills,
+                           Education education, MinimumGpa minimumGpa,
+                           List<LanguageRequirement> languages) {
             this.requiredSkills = requiredSkills != null ? requiredSkills : new ArrayList<>();
             this.preferredSkills = preferredSkills != null ? preferredSkills : new ArrayList<>();
+            this.education = education;
+            this.minimumGpa = minimumGpa;
+            this.languages = languages != null ? languages : new ArrayList<>();
         }
 
         public List<String> getRequiredSkills() { return requiredSkills; }
@@ -131,55 +278,68 @@ public class Job {
 
         public List<String> getPreferredSkills() { return preferredSkills; }
         public void setPreferredSkills(List<String> preferredSkills) { this.preferredSkills = preferredSkills; }
+
+        public Education getEducation() { return education; }
+        public void setEducation(Education education) { this.education = education; }
+
+        public MinimumGpa getMinimumGpa() { return minimumGpa; }
+        public void setMinimumGpa(MinimumGpa minimumGpa) { this.minimumGpa = minimumGpa; }
+
+        public List<LanguageRequirement> getLanguages() { return languages; }
+        public void setLanguages(List<LanguageRequirement> languages) { this.languages = languages; }
     }
 
-    // --- Getters & Setters ---
+    public static class Education {
+        private String minimumDegree;
+        private List<String> preferredMajors = new ArrayList<>();
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+        public Education() {}
 
-    public String getCompanyId() { return companyId; }
-    public void setCompanyId(String companyId) { this.companyId = companyId; }
+        public Education(String minimumDegree, List<String> preferredMajors) {
+            this.minimumDegree = minimumDegree;
+            this.preferredMajors = preferredMajors != null ? preferredMajors : new ArrayList<>();
+        }
 
-    public String getRecruiterId() { return recruiterId; }
-    public void setRecruiterId(String recruiterId) { this.recruiterId = recruiterId; }
+        public String getMinimumDegree() { return minimumDegree; }
+        public void setMinimumDegree(String minimumDegree) { this.minimumDegree = minimumDegree; }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+        public List<String> getPreferredMajors() { return preferredMajors; }
+        public void setPreferredMajors(List<String> preferredMajors) { this.preferredMajors = preferredMajors; }
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public static class MinimumGpa {
+        private Double value;
+        private Integer scale;
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+        public MinimumGpa() {}
 
-    public String getEmploymentType() { return employmentType; }
-    public void setEmploymentType(String employmentType) { this.employmentType = employmentType; }
+        public MinimumGpa(Double value, Integer scale) {
+            this.value = value;
+            this.scale = scale;
+        }
 
-    public Location getLocation() { return location; }
-    public void setLocation(Location location) { this.location = location; }
+        public Double getValue() { return value; }
+        public void setValue(Double value) { this.value = value; }
 
-    public Salary getSalary() { return salary; }
-    public void setSalary(Salary salary) { this.salary = salary; }
+        public Integer getScale() { return scale; }
+        public void setScale(Integer scale) { this.scale = scale; }
+    }
 
-    public Experience getExperience() { return experience; }
-    public void setExperience(Experience experience) { this.experience = experience; }
+    public static class LanguageRequirement {
+        private String name;
+        private String minimumLevel;
 
-    public Requirements getRequirements() { return requirements; }
-    public void setRequirements(Requirements requirements) { this.requirements = requirements; }
+        public LanguageRequirement() {}
 
-    public List<String> getBenefits() { return benefits; }
-    public void setBenefits(List<String> benefits) { this.benefits = benefits; }
+        public LanguageRequirement(String name, String minimumLevel) {
+            this.name = name;
+            this.minimumLevel = minimumLevel;
+        }
 
-    public LocalDateTime getDeadline() { return deadline; }
-    public void setDeadline(LocalDateTime deadline) { this.deadline = deadline; }
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+        public String getMinimumLevel() { return minimumLevel; }
+        public void setMinimumLevel(String minimumLevel) { this.minimumLevel = minimumLevel; }
+    }
 }
